@@ -1,5 +1,4 @@
-import React from 'react';
-import Home from './screens/Home';
+import Home from './Home';
 import styled from '@emotion/styled';
 
 const Container = styled.div`
@@ -14,11 +13,11 @@ const Container = styled.div`
 `;
 
 const App: React.FC = () => {
-  return (
-    <Container>
-      <Home />
-    </Container>
-  );
+    return (
+        <Container>
+            <Home />
+        </Container>
+    );
 }
 
 export default App;

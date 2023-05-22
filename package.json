@@ -1,8 +1,5 @@
 {
   "scripts": {
     "heroku-postbuild": "cd server && npm install && cd .. && cd client && npm install && npm run dev"
-  },
-  "engines": {
-    "node": "10.16.0"
   }
 }

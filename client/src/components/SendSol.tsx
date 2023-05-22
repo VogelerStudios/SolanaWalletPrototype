@@ -18,7 +18,7 @@ import {
     Transaction,
     LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
-
+import axios from "axios";
 export interface transactionInfo {
     transactionHash: string;
     explorerLink: string;
@@ -44,9 +44,6 @@ const SendSol: React.FC = () => {
             if (!publicKey) throw new WalletNotConnectedError();
             // 890880 lamports as of 2022-09-01
             const lamports = amount * LAMPORTS_PER_SOL;
-            console.log("lamports", lamports);
-            console.log("amount", amount);
-            console.log("LAMPORTS_PER_SOL", LAMPORTS_PER_SOL);
             const transaction = new Transaction().add(
                 SystemProgram.transfer({
                     fromPubkey: publicKey,
@@ -84,6 +81,21 @@ const SendSol: React.FC = () => {
                 setMessage("error");
             }
             setFetchingData(false);
+            axios
+                .post("http://localhost:5000/api/transactions/", {
+                    transactionHash: signature,
+                    explorerLink: `https://explorer.solana.com/tx/${signature}?cluster=testnet`,
+                    from: publicKey.toBase58(),
+                    to: destinationWallet,
+                    amount,
+                    slot: sentTransaction.context.slot,
+                })
+                .then((data) => {
+                    console.log("Transaction created successfully: ", data);
+                })
+                .catch((e) => {
+                    console.log("error: ", e);
+                });
         } catch (error) {
             setMessage("error");
         }

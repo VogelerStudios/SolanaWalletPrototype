@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import TabPanel from "@mui/joy/TabPanel";
 import Typography from "@mui/joy/Typography";
 import Input from "@mui/joy/Input";
@@ -6,8 +6,11 @@ import SearchRounded from "@mui/icons-material/SearchRounded";
 import Table from "@mui/joy/Table";
 import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
+import TextField from "@mui/material/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
 import Sheet from "@mui/joy/Sheet";
-
+import axios from "axios";
+import { useWallet } from "@solana/wallet-adapter-react";
 export interface transactionInfo {
     transactionHash: string;
     explorerLink: string;
@@ -19,6 +22,17 @@ export interface transactionInfo {
 const TransactionHistory = () => {
     const [open, setOpen] = useState<boolean>(false);
     const [transactionModal, setTransactionModal] = useState<transactionInfo>();
+    const [rows, setRows] = useState<transactionInfo[]>([]);
+    const { publicKey } = useWallet();
+
+    useEffect(() => {
+        axios
+            .get(`http://localhost:5000/api/transactions/${publicKey}`)
+            .then((transactions: { data: [transactionInfo] }) => {
+                setRows(transactions.data);
+            })
+            .catch((err: any) => console.log(err));
+    }, [publicKey]);
 
     return (
         <Fragment>
@@ -32,7 +46,6 @@ const TransactionHistory = () => {
                 <Sheet
                     variant="outlined"
                     sx={{
-                        maxWidth: 500,
                         borderRadius: "md",
                         p: 3,
                         boxShadow: "lg",
@@ -72,7 +85,7 @@ const TransactionHistory = () => {
                             </a>
                         </p>
                         <p> Wallet Destination: {transactionModal?.to}</p>
-                        <p> Amount: {transactionModal?.amount.toString()}</p>
+                        <p> Amount: {transactionModal?.amount.toString()} SOL</p>
                         <p>Slot: {transactionModal?.slot.toString()}</p>
                     </Typography>
                 </Sheet>
@@ -93,15 +106,22 @@ const TransactionHistory = () => {
                     color="info"
                     placeholder="Search for transaction"
                     startDecorator={<SearchRounded />}
+                    onChange={(event) => {
+                        const searchValue = event.target.value;
+                        axios
+                            .get(`http://localhost:5000/api/transactions/${publicKey}`)
+                            .then((transactions: { data: [transactionInfo] }) => {
+                                const filteredRows = transactions.data.filter((row) => {
+                                    return row.transactionHash.includes(searchValue);
+                                });
+                                setRows(filteredRows);
+                            });
+                    }}
                 />
                 <Table hoverRow>
                     <thead>
                         <tr>
                             <th>Transaction</th>
-                            <th>Solscan Link</th>
-                            <th>Wallet Destination</th>
-                            <th>Amount</th>
-                            <th>Slot</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,10 +134,6 @@ const TransactionHistory = () => {
                                 }}
                             >
                                 <td>{row.transactionHash}</td>
-                                <td>{row.explorerLink}</td>
-                                <td>{row.to}</td>
-                                <td>{row.amount.toString()}</td>
-                                <td>{row.slot.toString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -126,18 +142,5 @@ const TransactionHistory = () => {
         </Fragment>
     );
 };
-
-// Helpers
-function createData(
-    transactionHash: string,
-    explorerLink: string,
-    to: string,
-    amount: Number,
-    slot: Number
-) {
-    return { transactionHash, explorerLink, to, amount, slot };
-}
-
-const rows = [createData("hash", "Solscan Link", "addressTo", 4.0, 1203023)];
 
 export default TransactionHistory;

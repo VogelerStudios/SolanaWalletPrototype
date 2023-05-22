@@ -9,7 +9,7 @@ import transactionRoutes from "./routes/Transaction";
 dotenv.config();
 
 const app = express();
-const PORT = 3000 || process.env.PORT;
+const PORT = 5000 || process.env.PORT;
 
 // Middleware
 app.use(cors());

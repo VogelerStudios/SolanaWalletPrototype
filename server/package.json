@@ -28,5 +28,6 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.5.2",
     "typescript": "^5.0.4"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }
